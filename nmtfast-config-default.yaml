@@ -1,0 +1,94 @@
+---
+version: 1
+
+sqlalchemy:
+  url: sqlite+aiosqlite:///./development.sqlite
+
+mongo:
+  url: ''
+  db: nmt-fastapi-reference
+
+auth:
+  swagger_token_url: https://some.domain.tld/api/oidc/token
+  id_providers: {}
+    # some_oidc_provider_here:
+    #   type: jwks
+    #   issuer_regex: '^https://some.domain.tld$'
+    #   jwks_endpoint: https://some.domain.tld/jwks.json
+    #   introspection_enabled: true
+    #   introspection_endpoint: https://some.domain.tld/api/oidc/introspection
+    #   keyid_enabled: false
+    #   keyid_endpoint: https://localhost/not/enabled
+  incoming:
+    clients: {}
+      # some_api_client:
+      #   contact: some.user@domain.tld
+      #   memo: This is just some API client
+      #   provider: some_oidc_provider_here
+      #   claims:
+      #     client_id: some_api_client_id_here
+      #   acls:
+      #     - section_regex: '^widgets$'
+      #       permissions: ['*', 'create']
+    api_keys: {}
+      # some_key:
+      #   contact: some.user@domain.tld
+      #   memo: This is just some API key
+      #   algo: argon2
+      #   hash: '$argon2id$v=19$m=65536,t=3,p=4$tWmX...'
+      #   acls:
+      #     - section_regex: '^widgets$'
+      #       permissions: ['*', 'create']
+  outgoing:
+    clients: {}
+      # some_outbound_api_client:
+      #   contact: some.user@domain.tld
+      #   memo: This is just some API client
+      #   provider: some_oidc_provider_here
+      #   grant_type: client_credentials
+      #   client_id: some_outgoing_client_id_here
+      #   client_secret: # stored in secrets
+
+discovery:
+  mode: manual
+  services: {}
+    # widgets:
+    #   base_url: http://localhost:8000
+    #   auth_method: client_credentials
+    #   auth_principal: some_outbound_api_client
+    #   provider: some_oidc_provider_here
+
+kafka:
+  enabled: false
+  bootstrap_servers:
+    - localhost:29092
+  security_protocol: PLAINTEXT
+  group_id: nmt-fastapi-reference
+  topics:
+    - nmtfast-widgets
+
+logging:
+  level: DEBUG
+  loggers:
+    "aiosqlite":
+      level: INFO
+    "pymongo":
+      level: INFO
+    "httpcore":
+      level: INFO
+    "aiokafka":
+      level: INFO
+    "sse_starlette.sse":
+      level: INFO
+    "app.layers.service.v1.health":
+      level: INFO
+  # NOTE: these determine what will be logged as the client IP address; the
+  #   first header that matches will be used, so order matters!
+  client_host_headers: []
+    #- X-Real-IP
+    #- X-Forwarded-For
+
+tasks:
+  name: nmt-fastapi-reference
+  backend: sqlite
+  sqlite_filename: ./huey.sqlite

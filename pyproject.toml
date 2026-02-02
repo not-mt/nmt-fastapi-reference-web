@@ -1,0 +1,186 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "The reference design for \"nmt\" (not-mt) FastAPI projects."
+authors = [
+    {name = "Alexander Haye", email = "ahayehaye@not-mt.dev"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)",
+    "responses (>=0.25.6,<0.26.0)",
+    "sqlalchemy[asyncio] (>=2.0.40,<3.0.0)",
+    "uvicorn (>=0.35.0,<0.36.0)",
+    "aiosqlite (>=0.21.0,<0.22.0)",
+    "alembic (>=1.14.1,<2.0.0)",
+    "pydantic-settings (>=2.8.1,<3.0.0)",
+    "pymongo (>=4.13,<5.0.0)",
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
+    "aiomysql (>=0.3.0,<0.4.0)",
+    "pymysql (>=1.1.0,<2.0.0)",
+    "aiokafka (>=0.12.0,<0.13.0)",
+    "toml (>=0.10.2,<0.11.0)",
+    "types-toml (>=0.10.8.20240310,<0.11.3.4)",
+]
+packages = [
+    { include = "app", from = "src" }
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+line-length = 88  # Specify the line length
+target-version = ['py311']  # Specify your Python version
+include = '\.pyi?$'
+exclude = '''  # Specify the files/dirs that should be ignored by the black formatter
+/(
+    \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.tox
+  | \.local
+  | \.pypoetry_cache
+  | \.ruff_cache
+  | \.venv
+  | venv
+  | _build
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+known_first_party = "app"
+#src_paths = ["src"]
+skip = [
+  ".ruff_cache",
+  ".pypoetry_cache",
+  ".venv",
+  "venv",
+  "alembic"
+]
+
+[tool.pydoclint]
+style = "google"
+# TODO: figure out how to make this multi-line
+exclude = '\.pre-commit.*|LICENSE|\.(lock|txt|ini|toml|md)$|^\.?venv/|\.local'
+# NOTE: we are not going to duplicate types in the function and docstring
+arg_type_hints_in_docstring = false
+
+[tool.pydocstyle]
+convention = "google"
+# NOTE: D212 is 'Multi-line docstring summary should start at the first line' and
+#   and it is mutually exclusive with D213. They both relate to the placement of the
+#   summary line in a multiline docstring but enforce different styles. D212 requires
+#   the summary line to be on the first line after the opening quotes, while D213
+#   requires it to be on the second line. A docstring can't simultaneously adhere to
+#   both styles, and this project prefers D213.
+# NOTE: pydocstyle follows a strict interpretation of PEP 257, enforcing a separate
+#   __init__ docstring unless explicitly configured otherwise (D107). pydoclint (with
+#   Google-style docstrings) has a mutually exclusive requirement that __init__ methods
+#   do not have a docstring at all. For our purposes, it's easier to resolve the
+#   conflict by ignoring D107 in pydocstyle.
+# NOTE: D200 wants all single line comments to have quotes on the same line, but this
+#   can make documentation harder to read when putting the start and end """ on their
+#   own line would improve readability
+add-ignore = ["D212", "D107", "D200"]
+# You can adjust the rules you want to ignore if necessary
+# Only check .py files (adjust if you need more or less)
+match = "^(?!test_).*\\.py"
+match-dir = "^(?!alembic|\\.?venv|\\.local).*$"
+
+[tool.mypy]
+cache_dir = ".local/mypy_cache"
+exclude = "^alembic/|^\\.?(venv)/|^\\.local"
+explicit_package_bases = true
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = "huey.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "aiokafka.*"
+ignore_missing_imports = true
+
+#[[tool.mypy.overrides]]
+#module = "THE_NEXT_MODULE_GOES_HERE.*"
+#ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+cache_dir = ".local/pytest_cache"
+addopts = "--import-mode=importlib"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+# testpaths = ["tests"]
+
+[tool.coverage.run]
+data_file = ".local/coverage"
+branch = true
+source = ["app", "main.py"]
+omit = [
+    "*/alembic/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+omit = [
+    "*/tests/*",
+]
+# exclude normal '# pragma: no cover' and ALL logger.* calls
+exclude_lines = [
+    "pragma: no cover",
+    ".*logger\\.(debug|info|warning|error|critical).*\\(.*",
+]
+
+[tool.ruff]
+cache-dir = ".local/ruff_cache"
+
+[tool.commitizen]
+# NOTE: we are not customizing for now, even though we would really like to
+#   support "chore" and "revert" CC types when using `cz commit`; however,
+#   it's a ton of extra boilerplate configuration, and learning how to do CC
+#   commits by hand with git commit isn't _that_ hard! We can revisit this
+#   later, if necessary.
+#name = "cz_customize"
+name = "cz_conventional_commits"
+version = "0.1.0"
+changelog_start_rev = "v0.1.0"
+template = "changelog.j2"
+tag_format = "v$version"
+version_provider = "pep621"
+version_files = ["pyproject.toml"]
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.1.0"
+pytest = "^8.3.4"
+black = "^25.1.0"
+isort = "^6.0.0"
+mypy = "^1.15.0"
+invoke = "^2.2.0"
+ruff = "^0.9.6"
+pydoclint = "^0.6.0"
+pyment = "^0.3.3"
+pydocstyle = "^6.3.0"
+pytest-cov = "^6.0.0"
+pyright = "^1.1.396"
+types-pyyaml = "^6.0.12.20241230"
+pytest-asyncio = "^0.25.3"
+asgi-lifespan = "^2.1.0"
+commitizen = "^4.10.0"
+gitlint = "^0.19.1"
+docstring-parser = ">=0.17"
+docstring-parser-fork = ">=0.0.13"
+
+[tool.poetry.group.dev-nmtfast.dependencies]
+nmtfast = { path = "../nmt-fastapi-library", develop = true }

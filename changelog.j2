@@ -1,0 +1,19 @@
+{% for entry in tree %}
+
+## {{ entry.version }}{% if entry.date %} ({{ entry.date }}){% endif %}
+
+{% for change_key, changes in entry.changes.items() %}
+
+{% for change in changes %}
+{% for key, value in change.items() %}
+{# change - {{ key }}: {{ value }} #}
+{% endfor %}
+{% if change.scope %}
+    {% set message_prefix = change_key | lower ~ '(' ~ change.scope ~ ')' %}
+{% elif change.message %}
+    {% set message_prefix = change_key | lower %}
+{% endif %}
+- **{{ message_prefix }}**: {{ change.message }} ({{ change.sha1[:7] }})
+{% endfor %}
+{% endfor %}
+{% endfor %}
