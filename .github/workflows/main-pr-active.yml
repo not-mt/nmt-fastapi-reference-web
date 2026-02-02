@@ -1,0 +1,53 @@
+name: Active PRs (main)
+
+on:
+  # only run for active PRs, not pushes or closed PRs
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  pre-commit:
+    runs-on: self-hosted
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - 3.12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # NOTE: we need full history to let cz check find HEAD~1..HEAD
+          fetch-depth: 0
+          persist-credentials: true
+
+      # - name: Cache Poetry / pip
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.cache/pypoetry
+      #       ~/.cache/pip
+      #     key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-poetry-${{ matrix.python-version }}-
+
+      - name: Install common dependencies
+        uses: ./.github/actions/install-deps
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          poetry install
+
+      - name: Fix docstring_parser packages inside Poetry venv
+        uses: ./.github/actions/fix-docstring-parser
+
+      - name: Run all pre-commit checks
+        run: |
+          poetry run pre-commit run --all-files

@@ -1,0 +1,39 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Compound: uvicorn",
+      "configurations": [
+        "debugpy: uvicorn",
+      ],
+      "stopAll": true
+    }
+  ],
+  "configurations": [
+    {
+      "name": "debugpy: uvicorn",
+      "consoleName": "uvicorn",
+      "console":"internalConsole",
+      "internalConsoleOptions": "openOnSessionStart",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "APP_CONFIG_FILES": "nmtfast-config-default.yaml,nmtfast-config-local.yaml",
+      }
+    },
+    {
+      "name": "debugpy: local PID",
+      "type": "debugpy",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    },
+  ]
+}
