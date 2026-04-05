@@ -1,6 +1,6 @@
 [project]
 name = "app"
-version = "0.1.0"
+version = "0.2.0"
 description = "The web frontend for the \"nmt\" (not-mt) reference API."
 authors = [
     {name = "Alexander Haye", email = "ahayehaye@not-mt.dev"},
@@ -154,8 +154,8 @@ cache-dir = ".local/ruff_cache"
 #   later, if necessary.
 #name = "cz_customize"
 name = "cz_conventional_commits"
-version = "0.1.0"
-changelog_start_rev = "v0.1.0"
+version = "0.2.0"
+changelog_start_rev = "v0.2.0"
 template = "changelog.j2"
 tag_format = "v$version"
 version_provider = "pep621"
