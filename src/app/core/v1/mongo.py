@@ -8,9 +8,12 @@ import logging
 from functools import wraps
 from typing import Any, Callable, Coroutine, TypeVar
 
+from beanie import init_beanie
 from pymongo import AsyncMongoClient, MongoClient
 
 from app.core.v1.settings import get_app_settings
+from app.schemas.odm.v1.user_settings import UserSetting
+from app.schemas.odm.v1.users import User
 
 settings = get_app_settings()
 async_client: AsyncMongoClient | None = None
@@ -48,6 +51,13 @@ def with_huey_mongo_session(
         db_name = settings.mongo.db
         huey_async_client: AsyncMongoClient = AsyncMongoClient(settings.mongo.url)
         mongo_client = huey_async_client[db_name]
+        await init_beanie(
+            database=mongo_client,
+            document_models=[
+                User,
+                UserSetting,
+            ],
+        )
 
         try:
             logger.debug(f"Running: {func.__qualname__} with MongoDB: {db_name}")

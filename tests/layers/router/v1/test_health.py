@@ -9,7 +9,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from app.layers.repository.v1.widgets import WidgetRepository
 from app.layers.router.v1.health import get_health_service
 from app.layers.service.v1.health import AppHealthService
 from app.main import app
@@ -55,8 +54,6 @@ def test_get_health_service_creates_app_health_service():
     assert isinstance(service, AppHealthService)
     assert service.settings is mock_settings
     assert service.cache is mock_cache
-    assert isinstance(service.widget_repository, WidgetRepository)
-    assert service.widget_repository.db is mock_db
 
 
 @pytest.mark.asyncio

@@ -45,7 +45,7 @@ class MongoSettings(BaseModel):
         "mongodb+srv://FIXME_username:FIXME_PASSWORD"
         "@cluster0.FIXME.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
     )
-    db: str = "nmt-fastapi-reference"
+    db: str = "nmt-fastapi-reference-web"
 
 
 class CustomDiscoverySettings(ServiceDiscoverySettings):
@@ -118,9 +118,9 @@ class KafkaSettings(BaseModel):
 
     enabled: bool = False
     bootstrap_servers: list[str] = ["localhost:29092"]
-    group_id: str = "nmt-fastapi-reference"
+    group_id: str = "nmt-fastapi-reference-web"
     auto_offset_reset: Literal["earliest", "latest", "none"] = "earliest"
-    topics: list[str] = ["nmtfast-widgets"]
+    topics: list[str] = []
     security_protocol: Literal["PLAINTEXT", "SSL", "SASL_PLAINTEXT", "SASL_SSL"] = (
         "PLAINTEXT"
     )
@@ -138,7 +138,7 @@ class AppSettings(BaseSettings):
     """Application settings model."""
 
     version: int = 1
-    app_name: str = "nmt-fastapi-reference"
+    app_name: str = "nmt-fastapi-reference-web"
     sqlalchemy: SqlAlchemySettings = SqlAlchemySettings()
     mongo: MongoSettings = MongoSettings()
     auth: AuthSettings = AuthSettings(
@@ -162,13 +162,13 @@ class AppSettings(BaseSettings):
     kafka: KafkaSettings = KafkaSettings()
     logging: LoggingSettings = LoggingSettings()
     tasks: TaskSettings = TaskSettings(
-        name="FIXME",
+        name="nmt-fastapi-reference-web",
         backend="sqlite",
         url="redis://:FIXME_password@FIXME_host:6379/FIXME_db_number",
         sqlite_filename="./huey.sqlite",
     )
     cache: CacheSettings = CacheSettings(
-        name="nmt-fastapi-reference",
+        name="nmt-fastapi-reference-web",
         backend="huey",
         ttl=3600 * 4,
     )

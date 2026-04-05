@@ -38,8 +38,6 @@ COPY --from=lib-builder /build/dist /library_wheels
 
 # copy application code
 COPY src /build/src
-COPY alembic /build/alembic
-COPY alembic.ini /build/
 COPY LICENSE /build/
 COPY README.md /build/
 COPY nmtfast-config-default.yaml /build/

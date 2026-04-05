@@ -16,7 +16,6 @@ from app.core.v1.settings import AppSettings
 from app.dependencies.v1.cache import get_cache
 from app.dependencies.v1.settings import get_settings
 from app.dependencies.v1.sqlalchemy import get_sql_db
-from app.layers.repository.v1.widgets import WidgetRepository
 from app.layers.service.v1.health import AppHealthService
 
 logger = logging.getLogger(__name__)
@@ -42,9 +41,7 @@ def get_health_service(
     Returns:
         AppHealthService: An instance of the app health service.
     """
-    widget_repository = WidgetRepository(db)
-
-    return AppHealthService(settings, widget_repository, cache)
+    return AppHealthService(settings, cache)
 
 
 @health_router.get(

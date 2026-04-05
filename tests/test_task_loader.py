@@ -52,3 +52,23 @@ def test_discover_tasks_skips_init():
         discover_tasks()
 
     mock_import.assert_not_called()  # __init__.py should be skipped
+
+
+def test_discover_tasks_imports_task_modules(tmp_path):
+    """
+    Test discover_tasks() builds the correct module name and imports task modules.
+    """
+    v1_dir = tmp_path / "v1"
+    v1_dir.mkdir()
+    task_file = v1_dir / "some_task.py"
+    task_file.write_text("")
+
+    mock_spec = types.SimpleNamespace(submodule_search_locations=[str(tmp_path)])
+
+    with (
+        patch("importlib.util.find_spec", return_value=mock_spec),
+        patch("importlib.import_module") as mock_import,
+    ):
+        discover_tasks("app.tasks")
+
+    mock_import.assert_called_once_with("app.tasks.v1.some_task")

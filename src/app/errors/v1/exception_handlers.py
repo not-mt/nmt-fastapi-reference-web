@@ -10,7 +10,6 @@ It ensures consistent error responses for widget-related exceptions
 and common server-side errors.
 """
 
-
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from nmtfast.errors.v1.exceptions import UpstreamApiException

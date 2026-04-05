@@ -34,10 +34,10 @@ from app.errors.v1.exception_handlers import (
     upstream_api_exception_handler,
 )
 from app.errors.v1.exceptions import ResourceNotFoundError
-from app.layers.router.v1.gadgets import gadgets_router
 from app.layers.router.v1.health import health_router
-from app.layers.router.v1.upstream import widgets_api_router
-from app.layers.router.v1.widgets import widgets_router
+from app.layers.router.v1.login import login_router
+from app.layers.router.v1.main import webui_router
+from app.layers.router.v1.user_settings import user_settings_router
 
 # load project metadata from pyproject.toml
 with open("pyproject.toml", "rb") as f_reader:
@@ -50,7 +50,7 @@ MD_DESCRIPTION = f"""
 ## Project Home
 
 See complete project details at
-[GitHub](https://github.com/not-mt/nmt-fastapi-reference).
+[GitHub](https://github.com/not-mt/nmt-fastapi-reference-web).
 
 ## Features
 
@@ -63,7 +63,7 @@ See complete project details at
 - **Composable Config**: Merge settings from multiple files; isolate secrets as needed.
 
 More details are available in the
-[README.md](https://github.com/not-mt/nmt-fastapi-reference?tab=readme-ov-file) file.
+[README.md](https://github.com/not-mt/nmt-fastapi-reference-web?tab=readme-ov-file) file.
 
 ## Authors
 {AUTHORS}
@@ -89,7 +89,7 @@ def custom_openapi(app: FastAPI):
         )
 
         openapi_schema = get_openapi(
-            title="nmt-fastapi-reference",
+            title="nmt-fastapi-reference-web",
             version=project_version,
             summary=project_description,
             description=MD_DESCRIPTION,
@@ -124,9 +124,9 @@ def register_routers() -> None:
     Registers all API routers.
     """
     app.include_router(health_router)
-    app.include_router(widgets_router)
-    app.include_router(widgets_api_router)
-    app.include_router(gadgets_router)
+    app.include_router(user_settings_router)
+    app.include_router(webui_router)
+    app.include_router(login_router)
 
 
 def register_exception_handlers() -> None:
@@ -209,7 +209,7 @@ print(f"Starting app with root_path='{root_path}'")
 # NOTE: duration middleware must be first to log req IDs correctly
 settings: AppSettings = get_app_settings()
 app: FastAPI = FastAPI(
-    title="nmt-fastapi-reference",
+    title="nmt-fastapi-reference-web",
     lifespan=lifespan,
     root_path=root_path,
 )

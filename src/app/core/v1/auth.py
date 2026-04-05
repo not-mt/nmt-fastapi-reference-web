@@ -122,6 +122,12 @@ async def process_bearer_token(
             logger.info(f"JWT authentication for '{auth_info.name}' (cached)")
         elif mode == "authz":
             logger.info(f"JWT authorization for '{auth_info.name}' (cached)")
+            for acl in acls:
+                logger.debug(
+                    f"ACL for {auth_info.name} regex:'{acl.section_regex}' "
+                    f"permissions:{acl.permissions} "
+                    f"memo:'{acl.memo}'"
+                )
         return acls
 
     try:
@@ -134,6 +140,12 @@ async def process_bearer_token(
                 logger.info(f"JWT authentication for '{auth_info.name}'")
             elif mode == "authz":
                 logger.info(f"JWT authorization for '{auth_info.name}'")
+                for acl in acls:
+                    logger.debug(
+                        f"ACL for {auth_info.name} regex:'{acl.section_regex}' "
+                        f"permissions:{acl.permissions} "
+                        f"memo:'{acl.memo}'"
+                    )
     except AuthenticationError as exc:
         raise HTTPException(status_code=403, detail=f"Invalid token: {exc}")
 

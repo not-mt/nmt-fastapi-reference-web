@@ -1,14 +1,14 @@
 version: '3.8'
 
 services:
-  nmt-fastapi-reference:
-    container_name: nmt-fastapi-reference
+  nmt-fastapi-reference-web:
+    container_name: nmt-fastapi-reference-web
     build:
       context: .
       dockerfile: docker/Dockerfile
       args:
         LIBRARY_BRANCH: 'main'  # adjust if testing changes in library
-    image: nmt-fastapi-reference:latest
+    image: nmt-fastapi-reference-web:latest
     ports:
       - 8080:8080
     volumes:

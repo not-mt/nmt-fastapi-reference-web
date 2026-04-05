@@ -34,8 +34,8 @@ oauth2_scheme = OAuth2ClientCredentials(
 
 
 async def authenticate_headers(
-    api_key: str = Security(api_key_header),
-    token: str = Security(oauth2_scheme),
+    api_key: str | None = Security(api_key_header),
+    token: str | None = Security(oauth2_scheme),
     settings: AppSettings = Depends(get_app_settings),
     cache: AppCacheBase = Depends(get_cache),
 ) -> str:
@@ -44,7 +44,7 @@ async def authenticate_headers(
 
     Args:
         api_key: The API key from the request header.
-        token: The API key from the request header.
+        token: The Bearer token from the request header.
         settings: The application settings.
         cache: An implementation of AppCacheBase for getting/setting cache keys.
 
@@ -131,7 +131,17 @@ async def get_acls(
             raise HTTPException(status_code=403, detail=f"Invalid token: {exc}")
 
     # if neither API key nor token are valid
-    if not acls:
-        raise HTTPException(status_code=403, detail="Unauthorized")
+    # TODO: if this always returns 403, how does someone log in? ;)
+    # if not api_key and not token:
+    #     raise HTTPException(
+    #         status_code=403,
+    #         detail=(
+    #             "FIXME: Missing X-API-Key header or Bearer "
+    #             " token for authentication. "
+    #             " Need to figure out how to handle interactive login here."
+    #         ),
+    #     )
+    # if not acls:
+    #     raise HTTPException(status_code=403, detail="Unauthorized")
 
     return acls

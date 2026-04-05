@@ -30,6 +30,7 @@ auth:
       #   acls:
       #     - section_regex: '^widgets$'
       #       permissions: ['*', 'create']
+      #       memo: some_api_client full access to widgets
     api_keys: {}
       # some_key:
       #   contact: some.user@domain.tld
@@ -39,6 +40,26 @@ auth:
       #   acls:
       #     - section_regex: '^widgets$'
       #       permissions: ['*', 'create']
+      #       memo: some_key full access to widgets
+    users: {}
+      # some_user:
+      #   contact: some.user@domain.tld
+      #   memo: This is a static user
+      #   provider: some_oidc_provider_here
+      #   claims:
+      #     sub: some-user-uuid
+      #   acls:
+      #     - section_regex: '^.*$'
+      #       permissions: ['*']
+      #       memo: Full access for some_user
+    groups: {}
+      # some_group:
+      #   memo: Some group description
+      #   provider: some_oidc_provider_here
+      #   acls:
+      #     - section_regex: '^.*$'
+      #       permissions: ['*']
+      #       memo: Full access for some_group
   outgoing:
     clients: {}
       # some_outbound_api_client:
@@ -48,6 +69,28 @@ auth:
       #   grant_type: client_credentials
       #   client_id: some_outgoing_client_id_here
       #   client_secret: # stored in secrets
+  # web_auth:
+  #   provider: some_oidc_provider_here
+  #   client_id: my-web-client-id
+  #   client_secret: # stored in secrets
+  #   redirect_uri: http://localhost:8000/ui/v1/auth/callback
+  #   scopes:
+  #     - openid
+  #   pkce_enabled: false
+  #   refresh_enabled: false
+  #   token_endpoint_auth_method: client_secret_basic
+  #   displayname_claims:
+  #     - preferred_username
+  #     - mail
+  #   userid_claims:
+  #     - sub
+  # session:
+  #   cookie_name: session_id
+  #   cookie_secure: true
+  #   cookie_httponly: true
+  #   cookie_samesite: lax
+  #   cookie_path: /
+  #   session_ttl: 3600
 
 discovery:
   mode: manual

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} &mdash; Session</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50:  '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-stone-50 flex items-center justify-center px-4">
+
+    <div class="w-full max-w-lg">
+        <!-- Avatar + greeting -->
+        <div class="text-center mb-8">
+            <div class="mx-auto h-20 w-20 rounded-full bg-stone-800 flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-stone-300" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-stone-800">Hi {{ session.user_name }}</h1>
+            <p class="text-stone-500 mt-1">Active Session</p>
+
+            <div class="mt-4 flex items-center justify-center gap-3 text-sm font-semibold">
+                <a href="/ui/v1/auth/logout" class="text-rose-600 hover:text-rose-700 uppercase tracking-wide">Logout</a>
+            </div>
+        </div>
+
+        <!-- Session Claims Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-8">
+            <p class="text-sm font-bold text-stone-800 mb-1">{{ app_name }}</p>
+            <p class="text-sm text-stone-500 mb-6">The following claims are active for your session:</p>
+
+            <div class="space-y-4">
+                {% for key, value in session.user_claims.items() %}
+                <div class="flex items-start gap-4">
+                    <div class="mt-0.5 flex-shrink-0 h-8 w-8 rounded bg-stone-100 flex items-center justify-center">
+                        {% if key == "sub" %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                        {% elif key == "email" %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        {% elif key == "preferred_username" or key == "name" %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                        {% elif key == "groups" %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        {% else %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-stone-800">{{ value }}</p>
+                        <p class="text-xs text-stone-400">{{ key }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ACLs Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-8 mt-6">
+            <p class="text-sm font-bold text-stone-800 mb-1">Access Control</p>
+            <p class="text-sm text-stone-500 mb-6">The following ACL entries are assigned to your session:</p>
+
+            {% if session.acls %}
+            <div class="space-y-3">
+                {% for acl in session.acls %}
+                <div class="flex items-start gap-4">
+                    <div class="mt-0.5 flex-shrink-0 h-8 w-8 rounded bg-stone-100 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-stone-800">{{ acl.principal_name }}</p>
+                        <p class="text-xs text-stone-400">principal name</p>
+                        <p class="text-sm font-medium text-stone-800 mt-2">{{ acl.section_regex }}</p>
+                        <p class="text-xs text-stone-400">section</p>
+                        <p class="text-sm font-medium text-stone-800 mt-2">{{ acl.permissions | join(', ') }}</p>
+                        <p class="text-xs text-stone-400">permissions</p>
+                        {% if acl.memo %}
+                        <p class="text-sm font-medium text-stone-800 mt-2">{{ acl.memo }}</p>
+                        <p class="text-xs text-stone-400">memo</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-stone-400 italic">No ACLs assigned.</p>
+            {% endif %}
+        </div>
+
+        <p class="text-center text-xs text-stone-400 mt-6">Powered by {{ app_name }}</p>
+    </div>
+
+</body>
+</html>

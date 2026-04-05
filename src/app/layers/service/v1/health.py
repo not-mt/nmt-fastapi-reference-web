@@ -8,10 +8,8 @@ import json
 import logging
 
 from nmtfast.cache.v1.base import AppCacheBase
-from sqlalchemy import text
 
 from app.core.v1.settings import AppSettings
-from app.layers.repository.v1.widgets import WidgetRepository
 
 logger = logging.getLogger(__name__)
 
@@ -22,37 +20,16 @@ class AppHealthService:
 
     Args:
         settings: The application's AppSettings object.
-        widget_repository: The repository for widget data operations.
         cache: An implementation of AppCacheBase, for getting/setting cached data.
     """
 
     def __init__(
         self,
         settings: AppSettings,
-        widget_repository: WidgetRepository,
         cache: AppCacheBase,
     ) -> None:
         self.settings = settings
-        self.widget_repository: WidgetRepository = widget_repository
         self.cache = cache
-
-    async def _check_database(self) -> bool:
-        """
-        Check if app database connection is alive/ready.
-
-        Returns:
-            bool: Whether the readiness check(s) passed or not.
-
-        Raises:
-            Exception: Raises an exception if unable to communicate with DB.
-        """
-        try:
-            await self.widget_repository.db.execute(text("SELECT 1"))
-            logger.debug("Database health check passed")
-        except Exception:
-            logger.critical("Database health check failed!", exc_info=True)
-            raise
-        return True
 
     async def _check_cache(self) -> bool:
         """
@@ -90,13 +67,6 @@ class AppHealthService:
 
         if "basic" in checks:
             results["basic"] = True
-
-        if "database" in checks:
-            try:
-                results["database"] = await self._check_database()
-            except Exception:
-                logger.critical("Database health check failed!", exc_info=True)
-                results["database"] = False
 
         if "cache" in checks:
             try:

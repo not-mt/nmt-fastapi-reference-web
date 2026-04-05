@@ -92,7 +92,10 @@ async def test_with_huey_mongo_session_success():
     async_client_mock.__getitem__.return_value = AsyncMock()
     async_client_mock.close = AsyncMock()
 
-    with patch("app.core.v1.mongo.AsyncMongoClient", return_value=async_client_mock):
+    with (
+        patch("app.core.v1.mongo.AsyncMongoClient", return_value=async_client_mock),
+        patch("app.core.v1.mongo.init_beanie", new=AsyncMock()),
+    ):
         result = await dummy_task()
 
         assert result == "ok"
@@ -116,7 +119,10 @@ async def test_with_huey_mongo_session_exception():
     async_client_mock.__getitem__.return_value = AsyncMock()
     async_client_mock.close = AsyncMock()
 
-    with patch("app.core.v1.mongo.AsyncMongoClient", return_value=async_client_mock):
+    with (
+        patch("app.core.v1.mongo.AsyncMongoClient", return_value=async_client_mock),
+        patch("app.core.v1.mongo.init_beanie", new=AsyncMock()),
+    ):
         with pytest.raises(ValueError, match="boom"):
             await failing_task()
 

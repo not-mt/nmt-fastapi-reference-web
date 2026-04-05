@@ -76,7 +76,7 @@ def test_custom_openapi_schema_caching() -> None:
 
     # First call: schema should be generated and cached
     schema_first = app.openapi()
-    assert schema_first["info"]["title"] == "nmt-fastapi-reference"
+    assert schema_first["info"]["title"] == "nmt-fastapi-reference-web"
     assert schema_first["info"]["version"] == PROJECT_DATA["project"]["version"]
     assert schema_first["info"]["summary"] == PROJECT_DATA["project"]["description"]
     assert schema_first["info"]["description"] == MD_DESCRIPTION
@@ -122,11 +122,20 @@ async def test_lifespan() -> None:
     """
     test_app = FastAPI(lifespan=lifespan)
     mock_create_all = MagicMock()  # NOTE: DO NOT AsyncMock() THIS EVER
+    mock_conn = AsyncMock()
+    mock_begin_ctx = AsyncMock()
+    mock_begin_ctx.__aenter__.return_value = mock_conn
+    mock_engine = MagicMock()
+    mock_engine.begin.return_value = mock_begin_ctx
     mock_consumer_task_1 = MagicMock()
     mock_consumer_task_2 = MagicMock()
     mock_kafka_producer = AsyncMock()
 
     with (
+        patch(
+            "app.main.async_engine",
+            mock_engine,
+        ),
         patch.object(
             Base.metadata,
             "create_all",
@@ -148,7 +157,7 @@ async def test_lifespan() -> None:
         async with LifespanManager(test_app):
             pass
 
-        mock_create_all.assert_called_once()
+        mock_conn.run_sync.assert_awaited_once_with(mock_create_all)
         mock_kafka_producer.stop.assert_awaited_once()
         mock_consumer_task_1.cancel.assert_called_once()
         mock_consumer_task_2.cancel.assert_called_once()
@@ -161,9 +170,15 @@ async def test_lifespan_kafka_producer_none() -> None:
     """
     test_app = FastAPI(lifespan=lifespan)
     mock_create_all = MagicMock()  # NOTE: DO NOT AsyncMock() THIS EVER
+    mock_conn = AsyncMock()
+    mock_begin_ctx = AsyncMock()
+    mock_begin_ctx.__aenter__.return_value = mock_conn
+    mock_engine = MagicMock()
+    mock_engine.begin.return_value = mock_begin_ctx
     mock_consumer_task = MagicMock()
 
     with (
+        patch("app.main.async_engine", mock_engine),
         patch.object(Base.metadata, "create_all", mock_create_all),
         patch("app.core.v1.discovery.required_clients", new=[]),
         patch("app.main.create_kafka_consumers", return_value=[mock_consumer_task]),
@@ -172,6 +187,6 @@ async def test_lifespan_kafka_producer_none() -> None:
         async with LifespanManager(test_app):
             pass
 
-        mock_create_all.assert_called_once()
+        mock_conn.run_sync.assert_awaited_once_with(mock_create_all)
         # kafka_producer is None, so nothing to await
         mock_consumer_task.cancel.assert_called_once()

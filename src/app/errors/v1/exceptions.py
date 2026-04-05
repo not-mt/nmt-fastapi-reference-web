@@ -18,3 +18,41 @@ class ResourceNotFoundError(Exception):
         super().__init__(f"{resource_name} with ID {resource_id} not found.")
         self.resource_id: str | int = resource_id
         self.resource_name: str = resource_name
+
+
+class NotAuthenticatedError(Exception):
+    """
+    Raised when a user is not authenticated.
+    """
+
+    pass
+
+
+class LoginConfigurationError(Exception):
+    """
+    Raised when web authentication is not configured.
+    """
+
+
+class LoginStateError(Exception):
+    """
+    Raised when the CSRF state is invalid or expired.
+    """
+
+
+class LoginCodeExchangeError(Exception):
+    """
+    Raised when the authorization code exchange fails.
+    """
+
+
+class LoginTokenError(Exception):
+    """
+    Raised when token validation fails.
+    """
+
+
+class LoginClaimsError(Exception):
+    """
+    Raised when required claims cannot be extracted from the token.
+    """

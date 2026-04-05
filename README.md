@@ -1,19 +1,18 @@
-# nmt-fastapi-reference
+# nmt-fastapi-reference-web
 
-[![codecov](https://codecov.io/github/not-mt/nmt-fastapi-reference/branch/main/graph/badge.svg)](https://codecov.io/github/not-mt/nmt-fastapi-reference)
+[![codecov](https://codecov.io/github/not-mt/nmt-fastapi-reference-web/branch/main/graph/badge.svg)](https://codecov.io/github/not-mt/nmt-fastapi-reference-web)
 
-A FastAPI-based microservice leveraging the `nmtfast` Python package for structured access control, logging, and caching.
+A FastAPI-based web interface which leverages the `nmtfast` Python package for structured access control, logging, and caching.
 
 ## Features
 
 - **OAuth 2.0 & API Key Authentication**: Secure endpoints using `nmtfast`'s authentication and authorization methods.
 - **Role-Based & Resource-Based ACLs**: Fine-grained access control managed via YAML configurations, supporting locally defined API keys as well as external identity providers.
 - **Backend Integration**:
-  - **PostgreSQL & Other RDBMS**: Managed via SQLAlchemy with async support and migrations using Alembic.
   - **Redis**: Used for caching, deduplication, and ephemeral state.
   - **MongoDB**: Async document storage using Motor for high-performance NoSQL access.
   - **Kafka**: Async event streaming with aiokafka for producer and consumer support.
-- **Asynchronous API Handling**: Fully async stack using FastAPI, SQLAlchemy, MongoDB, and Kafka async drivers.
+- **Asynchronous API Handling**: Fully async stack using FastAPI, MongoDB, and Kafka async drivers.
 - **Structured Logging**: Per-request unique IDs, configurable logger hierarchy, and customizable log formatters.
 - **Docker Examples**: Easily deployable with a multi-stage `Dockerfile` and a sample `docker-compose.yaml` for local development.
 - **Merged Configuration Files**: Declarative YAML-based configuration merged in layers (shared defaults, environment overrides, secrets) with full support for SOPS-encrypted values.
@@ -23,7 +22,7 @@ A FastAPI-based microservice leveraging the `nmtfast` Python package for structu
 ### Prerequisites
 
 - Python 3.11+
-- PostgreSQL, MySQL, or MongoDB database
+- MongoDB database
 - Redis
 
 ### Prepare Development Environment
@@ -31,8 +30,8 @@ A FastAPI-based microservice leveraging the `nmtfast` Python package for structu
 Clone the repository and install dependencies using Poetry:
 
 ```bash
-git clone https://github.com/not-mt/nmt-fastapi-reference-htmx.git
-cd nmt-fastapi-reference-htmx
+git clone https://github.com/not-mt/nmt-fastapi-reference-web.git
+cd nmt-fastapi-reference-web
 ```
 
 Create a virtual environment and install Poetry:
@@ -69,11 +68,11 @@ cp -urv samples/{.local,.vscode,*} .
 These files will be excluded by `.gitignore`, and you may customize however you would like. These are the notable files:
 
 - **.local/activate.env**
-  - This file will be sourced in a custom terminal profile (defined in `nmt-fastapi-reference.code-workspace` )
+  - This file will be sourced in a custom terminal profile (defined in `nmt-fastapi-reference-web.code-workspace` )
   - Customize `PROJECTS` to reflect the root path to your software projects
 - **.vscode/launch.json**
   - Template of how to start the project in VS Code's debugger; adjust if necessary
-- **nmt-fastapi-reference.code-workspace**
+- **nmt-fastapi-reference-web.code-workspace**
   - Sensible defaults are specified here and may be customized as necessary
   - A `terminal.integrated.defaultProfile.windows` is set to use the `.local/activate.env` file when starting new terminals
 
@@ -93,7 +92,7 @@ Test the activate script:
 source .local/activate.env
 ```
 
-Once files have been customized, you may re-open VS Code using the `nmt-fastapi-reference.code-workspace` file.
+Once files have been customized, you may re-open VS Code using the `nmt-fastapi-reference-web.code-workspace` file.
 
 ### Configuration
 
@@ -116,11 +115,6 @@ Place the generated hash in the `nmtfast-config-local.yaml` config file; for exa
 ---
 version: 1
 
-sqlalchemy:
-  url: sqlite+aiosqlite:///./development.sqlite
-  # url: mysql+aiomysql://user:passwd@dbhost:3306/nmtfastdev1?charset=utf8mb4
-  # url: postgresql+asyncpg://user:passwd@dbhost:5432/nmtfastdev1
-
 auth:
   swagger_token_url: https://some.domain.tld/api/oidc/token
   id_providers: {}
@@ -140,8 +134,6 @@ auth:
 logging:
   level: DEBUG
   loggers:
-    "aiosqlite":
-      level: INFO
     "some.other.module.*":
       level: INFO
 ```

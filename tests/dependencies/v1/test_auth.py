@@ -249,30 +249,25 @@ async def test_get_acls_invalid_token_format(mock_settings, mock_cache):
 @pytest.mark.asyncio
 async def test_get_acls_no_bearer_prefix(mock_settings, mock_cache):
     """
-    Test token without Bearer prefix.
+    Test token without Bearer prefix returns empty ACLs.
     """
     mock_request = MagicMock(spec=Request)
     mock_request.headers = {"Authorization": "not-a-bearer-token"}
 
-    with pytest.raises(HTTPException) as exc:
-        await get_acls(mock_request, mock_settings, mock_cache)
-
-    assert exc.value.status_code == 403
+    result = await get_acls(mock_request, mock_settings, mock_cache)
+    assert result == []
 
 
 @pytest.mark.asyncio
 async def test_get_acls_no_credentials(mock_settings, mock_cache):
     """
-    Test no credentials provided.
+    Test no credentials returns empty ACLs.
     """
     mock_request = MagicMock(spec=Request)
     mock_request.headers = {}
 
-    with pytest.raises(HTTPException) as exc:
-        await get_acls(mock_request, mock_settings, mock_cache)
-
-    assert exc.value.status_code == 403
-    assert "Unauthorized" in exc.value.detail
+    result = await get_acls(mock_request, mock_settings, mock_cache)
+    assert result == []
 
 
 @pytest.mark.asyncio

@@ -68,3 +68,29 @@ async def test_with_huey_db_session_injects_db_session():
     mock_session.commit.assert_awaited_once()
     mock_session.rollback.assert_not_called()
     mock_session.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_with_huey_db_session_rollback_on_exception():
+    """
+    Test that with_huey_db_session rolls back and re-raises on exception.
+    """
+
+    @with_huey_db_session
+    async def failing_function(db_session=None):
+        raise ValueError("something went wrong")
+
+    mock_session = AsyncMock()
+    mock_session.__aenter__.return_value = mock_session
+    mock_session.__aexit__.return_value = None
+    mock_session.commit = AsyncMock()
+    mock_session.rollback = AsyncMock()
+    mock_session.close = AsyncMock()
+
+    with patch("app.core.v1.sqlalchemy.huey_session", return_value=mock_session):
+        with pytest.raises(ValueError, match="something went wrong"):
+            await failing_function()
+
+    mock_session.commit.assert_not_called()
+    mock_session.rollback.assert_awaited_once()
+    mock_session.close.assert_awaited_once()

@@ -17,6 +17,25 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+@pytest.fixture(scope="session", autouse=True)
+def use_memory_huey():
+    """
+    Fixture to replace Huey's storage with in-memory storage for tests.
+
+    Replace SqliteHuey's storage with MemoryStorage for all tests to prevent
+    unclosed sqlite3.Connection warnings from thread-local storage.
+    """
+    from huey.storage import MemoryStorage
+
+    from app.core.v1.tasks import huey_app
+
+    original_storage = huey_app.storage
+    huey_app.storage = MemoryStorage(huey_app.name)
+    original_storage.close()
+    yield
+    huey_app.storage = original_storage
+
+
 @pytest.fixture
 def test_app_settings_with_loggers() -> AppSettings:
     """
