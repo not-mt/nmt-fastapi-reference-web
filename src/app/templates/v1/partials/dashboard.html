@@ -1,0 +1,102 @@
+<div class="space-y-6">
+
+    {# Header info extracted by JS into the top bar #}
+    <template data-page-header>
+        <h2 class="text-lg font-bold text-stone-800">Dashboard</h2>
+    </template>
+
+    <!-- Greeting -->
+    <div>
+        {% if display_name %}
+        <h3 class="text-xl font-semibold text-stone-800">Welcome back, {{ display_name }}</h3>
+        {% else %}
+        <h3 class="text-xl font-semibold text-stone-800">Welcome!</h3>
+        <p class="text-sm text-stone-500 mt-1">
+            <button onclick="openModal('/ui/v1/settings')"
+                    class="text-brand-600 hover:text-brand-500 font-medium cursor-pointer underline">
+                Set your display name
+            </button>
+            in Settings to personalise your dashboard.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-1 min-[850px]:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <!-- Widget count card -->
+        <div class="bg-white rounded-lg border border-stone-200 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-stone-500 uppercase tracking-wide">Widgets</p>
+                    <p class="text-3xl font-bold text-stone-800 mt-1">{{ widget_count if widget_count is not none else "&mdash;" }}</p>
+                </div>
+                <div class="bg-brand-50 rounded-full p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-500" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a hx-get="/ui/v1/widgets" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true"
+                   onclick="closeDetailPanel()"
+                   class="text-sm text-brand-600 hover:text-brand-500 font-medium cursor-pointer">
+                    View all widgets &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- Gadget count card -->
+        <div class="bg-white rounded-lg border border-stone-200 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-stone-500 uppercase tracking-wide">Gadgets</p>
+                    <p class="text-3xl font-bold text-stone-800 mt-1">{{ gadget_count if gadget_count is not none else "&mdash;" }}</p>
+                </div>
+                <div class="bg-emerald-50 rounded-full p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-500" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a hx-get="/ui/v1/gadgets" hx-target="#main-content" hx-swap="innerHTML" hx-push-url="true"
+                   onclick="closeDetailPanel()"
+                   class="text-sm text-emerald-600 hover:text-emerald-500 font-medium cursor-pointer">
+                    View all gadgets &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick actions card -->
+        <div class="bg-white rounded-lg border border-stone-200 p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-stone-500 uppercase tracking-wide">Quick Actions</p>
+                    <p class="text-sm text-stone-600 mt-2">Common tasks</p>
+                </div>
+                <div class="bg-violet-50 rounded-full p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-500" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4 space-y-2">
+                <button hx-get="/ui/v1/widgets/create" hx-target="#detail-panel-content" hx-swap="innerHTML"
+                        class="w-full text-left text-sm text-stone-600 hover:text-brand-600 cursor-pointer">
+                    + Create Widget
+                </button>
+                <button hx-get="/ui/v1/gadgets/create" hx-target="#detail-panel-content" hx-swap="innerHTML"
+                        class="w-full text-left text-sm text-stone-600 hover:text-emerald-600 cursor-pointer">
+                    + Create Gadget
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</div>

@@ -95,11 +95,10 @@ auth:
 discovery:
   mode: manual
   services: {}
-    # widgets:
-    #   base_url: http://localhost:8000
-    #   auth_method: client_credentials
-    #   auth_principal: some_outbound_api_client
-    #   provider: some_oidc_provider_here
+
+upstream:
+  reference_api:
+    url: http://localhost:8000
 
 kafka:
   enabled: false

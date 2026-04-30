@@ -134,11 +134,34 @@ class KafkaSettings(BaseModel):
     ssl_keyfile: Optional[str] = None
 
 
+class ReferenceApiSettings(BaseModel):
+    """
+    Settings for the upstream reference API.
+
+    Attributes:
+        url: Base URL of the reference API.
+    """
+
+    url: str = "http://localhost:8000"
+
+
+class UpstreamSettings(BaseModel):
+    """
+    Settings for upstream/remote API connections.
+
+    Attributes:
+        reference_api: Connection settings for the reference API.
+    """
+
+    reference_api: ReferenceApiSettings = ReferenceApiSettings()
+
+
 class AppSettings(BaseSettings):
     """Application settings model."""
 
     version: int = 1
     app_name: str = "nmt-fastapi-reference-web"
+    upstream: UpstreamSettings = UpstreamSettings()
     sqlalchemy: SqlAlchemySettings = SqlAlchemySettings()
     mongo: MongoSettings = MongoSettings()
     auth: AuthSettings = AuthSettings(

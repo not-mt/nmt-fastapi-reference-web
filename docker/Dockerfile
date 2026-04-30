@@ -86,7 +86,7 @@ RUN groupadd -g $APP_GID app && \
         -u $APP_UID -g $APP_GID app && \
     mkdir src /app/static
 
-# copy shared library from stage 1 and app fromm stage 2
+# copy shared library from stage 1 and app from stage 2
 COPY --from=lib-builder /build/dist /app/dist
 COPY --from=app-builder /build/dist /app/dist
 
