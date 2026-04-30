@@ -20,7 +20,6 @@ from nmtfast.logging.v1.config import create_logging_config
 from nmtfast.middleware.v1.request_duration import RequestDurationMiddleware
 from nmtfast.middleware.v1.request_id import RequestIDMiddleware
 
-from app.core.v1.discovery import create_api_clients
 from app.core.v1.health import set_app_not_ready, set_app_ready
 from app.core.v1.kafka import create_kafka_consumers, create_kafka_producer
 from app.core.v1.settings import AppSettings, get_app_settings
@@ -34,10 +33,12 @@ from app.errors.v1.exception_handlers import (
     upstream_api_exception_handler,
 )
 from app.errors.v1.exceptions import ResourceNotFoundError
+from app.layers.router.v1.gadgets import webui_gadgets_router
 from app.layers.router.v1.health import health_router
 from app.layers.router.v1.login import login_router
 from app.layers.router.v1.main import webui_router
 from app.layers.router.v1.user_settings import user_settings_router
+from app.layers.router.v1.widgets import webui_widgets_router
 
 # load project metadata from pyproject.toml
 with open("pyproject.toml", "rb") as f_reader:
@@ -121,11 +122,13 @@ def configure_logging(settings: AppSettings) -> None:
 
 def register_routers() -> None:
     """
-    Registers all API routers.
+    Registers all routers.
     """
     app.include_router(health_router)
     app.include_router(user_settings_router)
     app.include_router(webui_router)
+    app.include_router(webui_widgets_router)
+    app.include_router(webui_gadgets_router)
     app.include_router(login_router)
 
 
@@ -171,9 +174,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     logger: logging.Logger = logging.getLogger(__name__)
     logger.info("Lifespan started")
-
-    logger.info("Initializing API Clients (if any)...")
-    await create_api_clients()
 
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

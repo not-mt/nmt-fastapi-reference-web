@@ -13,7 +13,7 @@ services:
       - 8080:8080
     volumes:
       - ./nmtfast-config-local.yaml:/app/nmtfast-config-local.yaml
-      - ./development.sqlite:/app/development.sqlite
+      #- ./development.sqlite:/app/development.sqlite
     environment:
       APP_CONFIG_FILES: nmtfast-config-default.yaml,nmtfast-config-local.yaml
     #

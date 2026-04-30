@@ -31,12 +31,6 @@ do
         break
     fi
 
-    if ! supervisorctl status huey | grep -q RUNNING
-    then
-        echo "huey process crashed"
-        break
-    fi
-
     if ! supervisorctl status nginx | grep -q RUNNING
     then
         echo "nginx process crashed"

@@ -120,3 +120,58 @@ async def test_update_value_not_found(user_setting_repo, mock_collection):
 
     with pytest.raises(ResourceNotFoundError):
         await user_setting_repo.update_value("nonexistent", "new-val")
+
+
+@pytest.mark.asyncio
+async def test_get_by_user_and_name_found(user_setting_repo, mock_collection):
+    """
+    Test retrieving a user_setting by user_id and name when it exists.
+    """
+    mock_collection.find_one = AsyncMock(
+        return_value={
+            "_id": "mongo-oid",
+            "id": "us-1",
+            "user_id": "u1",
+            "name": "page_size",
+            "value": "25",
+        }
+    )
+
+    result = await user_setting_repo.get_by_user_and_name("u1", "page_size")
+
+    assert isinstance(result, UserSettingRead)
+    assert result.value == "25"
+
+
+@pytest.mark.asyncio
+async def test_get_by_user_and_name_not_found(user_setting_repo, mock_collection):
+    """
+    Test get_by_user_and_name returns None when not found.
+    """
+    mock_collection.find_one = AsyncMock(return_value=None)
+
+    result = await user_setting_repo.get_by_user_and_name("u1", "missing")
+
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_upsert_by_user_and_name(user_setting_repo, mock_collection):
+    """
+    Test upserting a user_setting by user_id and name.
+    """
+    mock_collection.find_one_and_update = AsyncMock(
+        return_value={
+            "_id": "mongo-oid",
+            "id": "us-1",
+            "user_id": "u1",
+            "name": "timezone",
+            "value": "UTC",
+        }
+    )
+
+    result = await user_setting_repo.upsert_by_user_and_name("u1", "timezone", "UTC")
+
+    assert isinstance(result, UserSettingRead)
+    assert result.value == "UTC"
+    mock_collection.find_one_and_update.assert_awaited_once()

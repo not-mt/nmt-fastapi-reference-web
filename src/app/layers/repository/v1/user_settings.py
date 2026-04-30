@@ -132,3 +132,72 @@ class UserSettingRepository:
         logger.debug(f"UserSetting ID {user_setting_id} value updated to {new_value}")
 
         return UserSettingRead(**db_user_setting)
+
+    @retry(
+        reraise=True,
+        stop=stop_after_attempt(5),
+        wait=wait_fixed(0.2),
+        after=tenacity_retry_log(logger),
+    )
+    async def get_by_user_and_name(
+        self, user_id: str, name: str
+    ) -> UserSettingRead | None:
+        """
+        Retrieve a user_setting by user ID and setting name.
+
+        Args:
+            user_id: The ID of the user who owns the setting.
+            name: The name of the setting to retrieve.
+
+        Returns:
+            UserSettingRead | None: The setting if found, otherwise None.
+        """
+        logger.debug(f"Fetching user_setting for user {user_id}, name={name}")
+        db_user_setting: dict[str, Any] | None = await self.collection.find_one(
+            {"user_id": user_id, "name": name}
+        )
+
+        if db_user_setting is None:
+            return None
+
+        db_user_setting.pop("_id", None)
+        return UserSettingRead(**db_user_setting)
+
+    @retry(
+        reraise=True,
+        stop=stop_after_attempt(5),
+        wait=wait_fixed(0.2),
+        after=tenacity_retry_log(logger),
+    )
+    async def upsert_by_user_and_name(
+        self, user_id: str, name: str, value: str
+    ) -> UserSettingRead:
+        """
+        Create or update a user_setting identified by user ID and name.
+
+        If a document with the given user_id and name already exists its
+        value is updated; otherwise a new document is inserted.
+
+        Args:
+            user_id: The ID of the user who owns the setting.
+            name: The name of the setting.
+            value: The new value for the setting.
+
+        Returns:
+            UserSettingRead: The created or updated user_setting.
+        """
+        logger.debug(
+            f"Upserting user_setting for user {user_id}, " f"name={name}, value={value}"
+        )
+        db_user_setting = await self.collection.find_one_and_update(
+            {"user_id": user_id, "name": name},
+            {
+                "$set": {"value": value},
+                "$setOnInsert": {"id": str(uuid4()), "name": name, "user_id": user_id},
+            },
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+
+        db_user_setting.pop("_id", None)
+        return UserSettingRead(**db_user_setting)

@@ -2,12 +2,14 @@
 
 [![codecov](https://codecov.io/github/not-mt/nmt-fastapi-reference-web/branch/main/graph/badge.svg)](https://codecov.io/github/not-mt/nmt-fastapi-reference-web)
 
-A FastAPI-based web interface which leverages the `nmtfast` Python package for structured access control, logging, and caching.
+A FastAPI-based web interface (BFF — Backend for Frontend) that provides an HTMX-driven UI for the [nmt-fastapi-reference](https://github.com/not-mt/nmt-fastapi-reference) API. Leverages the `nmtfast` Python package for reusable authentication, templates, and data-driven CRUD components.
 
 ## Features
 
-- **OAuth 2.0 & API Key Authentication**: Secure endpoints using `nmtfast`'s authentication and authorization methods.
-- **Role-Based & Resource-Based ACLs**: Fine-grained access control managed via YAML configurations, supporting locally defined API keys as well as external identity providers.
+- **HTMX-Powered Web UI**: Data-driven CRUD interface using HTMX, Jinja2, and Tailwind CSS — no JavaScript framework required.
+- **SSO / OAuth 2.0 Login**: Interactive user authentication via OpenID Connect, with session management and cookie-based sessions.
+- **Data-Driven Resource Management**: Reusable template system driven by `ResourceConfig` — define fields, accents, and layouts in Python, rendered automatically by shared templates.
+- **Backend for Frontend (BFF)**: Proxies API calls to the upstream reference API, handling token forwarding, error presentation, and response transformation.
 - **Backend Integration**:
   - **Redis**: Used for caching, deduplication, and ephemeral state.
   - **MongoDB**: Async document storage using Motor for high-performance NoSQL access.
@@ -103,58 +105,186 @@ cp nmtfast-config-default.yaml nmtfast-config-local.yaml
 $EDITOR nmtfast-config-local.yaml
 ```
 
-For local testing, you probably only need to generate an API key. A utility is included with this project to generate password hashes:
+#### Architecture
 
-```bash
-./generate-api-hash.py
+This application is a **web UI frontend** (BFF — Backend for Frontend) that communicates with the [nmt-fastapi-reference](https://github.com/not-mt/nmt-fastapi-reference) API as its upstream backend. You must have the reference API running and reachable before starting this service.
+
+```
+Browser  →  nmt-fastapi-reference-web (this app)  →  nmt-fastapi-reference (API)
+              ↕ SSO / OIDC Provider
 ```
 
-Place the generated hash in the `nmtfast-config-local.yaml` config file; for example:
+#### Upstream API Connection
+
+Configure the URL of the running reference API instance:
+
+```yaml
+upstream:
+  reference_api:
+    url: http://localhost:8005
+```
+
+#### Authentication (SSO / OIDC)
+
+The web UI uses OAuth 2.0 / OpenID Connect for interactive user login. You need an OIDC provider (e.g. [Authelia](https://www.authelia.com/), [Keycloak](https://www.keycloak.org/), or any compliant provider).
+
+Configure the identity provider, web auth client, and session settings:
+
+```yaml
+auth:
+  id_providers:
+    my_provider:
+      type: jwks
+      issuer_regex: '^https://auth\.example\.com'
+      jwks_endpoint: https://auth.example.com/jwks.json
+      token_endpoint: https://auth.example.com/api/oidc/token
+      authorize_endpoint: https://auth.example.com/api/oidc/authorization
+      introspection_enabled: false
+
+  incoming:
+    clients:
+      web_ui_client:
+        contact: admin@example.com
+        memo: Web UI interactive login client
+        provider: my_provider
+        claims:
+          azp: nmt-fastapi-reference-web
+        acls: []
+
+  web_auth:
+    provider: my_provider
+    client_id: nmt-fastapi-reference-web
+    client_secret: your-client-secret-here
+    redirect_uri: http://localhost:8000/ui/v1/auth/callback
+    scopes:
+      - openid
+      - profile
+      - email
+      - groups
+    pkce_enabled: false
+    refresh_enabled: false
+    token_endpoint_auth_method: client_secret_post
+    displayname_claims:
+      - preferred_username
+      - mail
+    userid_claims:
+      - sub
+
+  session:
+    cookie_name: session_id
+    cookie_secure: false      # set to true in production (requires HTTPS)
+    cookie_httponly: true
+    cookie_samesite: lax
+    cookie_path: /
+    session_ttl: 3600
+```
+
+#### API Key Authentication (for the upstream API)
+
+If the upstream reference API requires authentication, configure an outgoing client or static headers so this service can authenticate its API calls:
+
+```yaml
+auth:
+  outgoing:
+    headers:
+      upstream_headers:
+        contact: admin@example.com
+        memo: Static API key for upstream reference API
+        headers:
+          X-API-Key: your-api-key-here
+```
+
+#### Logging
+
+```yaml
+logging:
+  level: DEBUG
+  loggers:
+    "aiosqlite":
+      level: INFO
+    "pymongo":
+      level: INFO
+```
+
+#### Minimal Working Example
+
+A minimal `nmtfast-config-local.yaml` for local development (assuming the reference API is running on port 8005 and an OIDC provider is available):
 
 ```yaml
 ---
 version: 1
 
+upstream:
+  reference_api:
+    url: http://localhost:8005
+
 auth:
-  swagger_token_url: https://some.domain.tld/api/oidc/token
-  id_providers: {}
+  id_providers:
+    my_provider:
+      type: jwks
+      issuer_regex: '^https://auth\.example\.com'
+      jwks_endpoint: https://auth.example.com/jwks.json
+      token_endpoint: https://auth.example.com/api/oidc/token
+      authorize_endpoint: https://auth.example.com/api/oidc/authorization
   incoming:
-    clients: {}
-    api_keys:
-      some_key:
-        contact: some.user@domain.tld
-        memo: This is just some API key
-        algo: argon2
-        hash: '$argon2id$v=19$m=65536,t=3,p=4$tWmX...'
-        acls:
-          - section_regex: '^widgets$'
-            #permissions: ['*']
-            permissions: ['create', 'read']
+    clients:
+      web_ui_client:
+        contact: admin@example.com
+        memo: Web UI interactive login
+        provider: my_provider
+        claims:
+          azp: nmt-fastapi-reference-web
+        acls: []
+  outgoing:
+    headers:
+      upstream_headers:
+        contact: admin@example.com
+        memo: API key for upstream
+        headers:
+          X-API-Key: your-api-key-here
+  web_auth:
+    provider: my_provider
+    client_id: nmt-fastapi-reference-web
+    client_secret: your-client-secret
+    redirect_uri: http://localhost:8000/ui/v1/auth/callback
+    scopes: [openid, profile, email, groups]
+    token_endpoint_auth_method: client_secret_post
+    displayname_claims: [preferred_username, mail]
+    userid_claims: [sub]
+  session:
+    cookie_secure: false
+    session_ttl: 3600
 
 logging:
   level: DEBUG
-  loggers:
-    "some.other.module.*":
-      level: INFO
 ```
 
 
 ### Running the Service
 
-You may run the service using a command like this:
+#### Prerequisites
+
+1. **Start the upstream reference API** ([nmt-fastapi-reference](https://github.com/not-mt/nmt-fastapi-reference)) — this web UI requires a running API backend.
+2. **Configure an OIDC provider** — the web UI uses SSO for user login (see [Authentication](#authentication-sso--oidc) above).
+
+#### Local Development
 
 ```bash
 export APP_CONFIG_FILES="./nmtfast-config-local.yaml"
-poetry run uvicorn app.main:app --reload
+poetry run uvicorn app.main:app --reload --port 8000
 ```
 
-**OPTIONAL:** If Docker is available, you may run the service like this:
+Then open `http://localhost:8000/ui/v1/login` in your browser.
+
+#### Docker
 
 ```bash
 cp samples/docker-compose.yaml .
 docker-compose build
 docker-compose up
 ```
+
+The containerized service listens on port **8080** (nginx → uvicorn). Open `http://localhost:8080/ui/v1/login` in your browser.
 
 ## Invoke Tasks
 
@@ -188,4 +318,4 @@ Contributions are welcome! Please submit a pull request or open an issue.
 
 This project is licensed under the [MIT License](LICENSE).
 
-Copyright (c) 2025 Alexander Haye
+Copyright (c) 2026 Alexander Haye

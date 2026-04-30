@@ -6,3 +6,5 @@ We use PEP 257 (Google style) for docstrings. Ensure all functions and classes h
 All non-tests should have PEP 484 compliant type hints.
 
 We want all docstrings (beginning and ending) to have '""" on their own lines.
+
+Do not use inline code formatting (``) for Python identifiers in docstrings.

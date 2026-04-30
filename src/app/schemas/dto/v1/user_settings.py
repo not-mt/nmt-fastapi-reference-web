@@ -4,6 +4,8 @@
 
 """Pydantic schema for user_settings."""
 
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -24,4 +26,8 @@ class UserSettingRead(UserSettingBase):
     """Schema for reading a user_setting, including additional attributes."""
 
     id: str = Field(..., description="Database or unique ID of the user_setting.")
+    user_id: Optional[str] = Field(
+        default=None,
+        description="ID of the user who owns this setting.",
+    )
     model_config = ConfigDict(from_attributes=True)
