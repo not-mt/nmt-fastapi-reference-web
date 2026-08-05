@@ -15,11 +15,15 @@ RUN git clone -b $LIBRARY_BRANCH \
         https://github.com/not-mt/nmt-fastapi-library.git \
         /build
 
-# build shared library as a wheel package
+# build shared library as a wheel package and export pinned requirements
 RUN python3 -m venv /build/venv && \
     . /build/venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install poetry && \
+    pip install poetry poetry-plugin-export && \
+    # do not import dev requirements
+    poetry export --only main \
+        --format requirements.txt \
+        --output /build/library-requirements.txt && \
     poetry build -f wheel
 
 #
@@ -46,13 +50,17 @@ COPY pyproject.toml /build/
 COPY poetry.lock /build/
 COPY poetry.toml /build/
 
-# build app as a wheel package
+# build app as a wheel package and export pinned requirements
 RUN python3 -m venv /build/venv && \
     . /build/venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install poetry && \
+    pip install poetry poetry-plugin-export && \
     poetry config virtualenvs.create false && \
     pip install /library_wheels/*.whl && \
+    # NOTE: do not import dev requirements
+    poetry export --only main \
+        --format requirements.txt \
+        --output /build/app-requirements.txt && \
     poetry build -f wheel
 
 #
@@ -93,11 +101,20 @@ COPY --from=app-builder /build/dist /app/dist
 # copy pyproject.toml file, which is needed to load OpenAPI schema
 COPY --from=app-builder /build/pyproject.toml /app/pyproject.toml
 
-# build venv, install packages build in earlier stages
+# copy pinned requirements from both stages
+COPY --from=lib-builder /build/library-requirements.txt \
+    /app/library-requirements.txt
+COPY --from=app-builder /build/app-requirements.txt \
+    /app/app-requirements.txt
+
+# build venv, install wheels without resolving deps,
+#   then install pinned requirements
 RUN python3 -m venv /app/venv && \
     . /app/venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install /app/dist/*.whl
+    pip install --no-deps /app/dist/*.whl && \
+    pip install -r /app/library-requirements.txt && \
+    pip install -r /app/app-requirements.txt
 
 # copy entrypoint, nginx, and supervisor config
 # NOTE: /app is writable by the unprivileged user, but the source code
