@@ -22,7 +22,7 @@ from app.layers.service.v1.gadgets import WebUIGadgetService
 MOCK_GADGET = GadgetRead(id="g1", name="Test", height="10", mass="5", force=20)
 MOCK_PAGINATION = PaginationMeta(total=1, page=1, page_size=10)
 MOCK_ZAP_TASK = GadgetZapTask(
-    uuid="abc", state="RUNNING", id="g1", duration=10, runtime=0
+    uuid="abc", state="RUNNING", gadget_id="g1", duration=10, runtime=0
 )
 
 
