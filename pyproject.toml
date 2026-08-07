@@ -1,6 +1,6 @@
 [project]
 name = "app"
-version = "0.3.0"
+version = "0.3.1"
 description = "The web frontend for the \"nmt\" (not-mt) reference API."
 authors = [
     {name = "Alexander Haye", email = "ahayehaye@not-mt.dev"},
@@ -18,7 +18,7 @@ dependencies = [
     "pymongo (>=4.13,<5.0.0)",
     "asyncpg (>=0.30.0,<0.31.0)",
     "psycopg2-binary (>=2.9.10,<3.0.0)",
-    "aiomysql (>=0.3.0,<0.4.0)",
+    "aiomysql (>=0.3.1,<0.4.0)",
     "pymysql (>=1.1.0,<2.0.0)",
     "aiokafka (>=0.12.0,<0.13.0)",
     "toml (>=0.10.2,<0.11.0)",
@@ -155,8 +155,8 @@ cache-dir = ".local/ruff_cache"
 #   later, if necessary.
 #name = "cz_customize"
 name = "cz_conventional_commits"
-version = "0.3.0"
-changelog_start_rev = "v0.3.0"
+version = "0.3.1"
+changelog_start_rev = "v0.3.1"
 template = "changelog.j2"
 tag_format = "v$version"
 version_provider = "pep621"

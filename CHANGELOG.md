@@ -1,3 +1,7 @@
+## v0.3.1 (2026-08-07)
+
+    - **fix**: update failing tests (#10) (f57b0ce)
+
 ## v0.3.0 (2026-04-30)
 
     - **feat**: implement library templates (3418379)
